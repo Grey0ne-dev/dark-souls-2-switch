@@ -13,7 +13,8 @@ include_guard(GLOBAL)
 
 set(REXGLUE_SWITCH_NVK_SDK "" CACHE PATH
     "portlibs/switch directory of the Mesa Horizon SDK (static NVK driver)")
-if(NOT EXISTS "${REXGLUE_SWITCH_NVK_SDK}/lib/libvulkan.a")
+option(REXGLUE_SWITCH_NO_NVK "Switch: do not link Mesa's NVK driver (a renderer without Vulkan; no Vulkan presenter)" OFF)
+if(NOT REXGLUE_SWITCH_NO_NVK AND NOT EXISTS "${REXGLUE_SWITCH_NVK_SDK}/lib/libvulkan.a")
     message(FATAL_ERROR
         "REXGLUE_SWITCH_NVK_SDK must point at <mesa-...-horizon-sdk>/opt/devkitpro/portlibs/switch "
         "(no lib/libvulkan.a under '${REXGLUE_SWITCH_NVK_SDK}')")
@@ -24,8 +25,6 @@ endif()
 # the ICD pair plume's Vulkan back end starts from); src/ui/switch_no_vulkan.c answers them with "no driver", so a
 # Vulkan instance cannot be created and libvulkan.a is not linked. The SDK's headers path stays (plume and the SDK's
 # Vulkan sources still compile against it).
-option(REXGLUE_SWITCH_NO_NVK "Switch: do not link Mesa's NVK driver (a renderer without Vulkan; no Vulkan presenter)" OFF)
-
 # Static NVK. Not find_package(Vulkan): the Mesa SDK's config requires libelf,
 # which devkitPro does not package. switch_elf_stubs.c satisfies the linker
 # instead; the NVIDIA CUBIN parser that uses libelf never runs on Switch.

@@ -314,6 +314,24 @@ def generated_bctrs(gen):
             if m:
                 func = addr = int(m.group(1), 16)
                 starts.add(func)
+                # loop_locals.py inserts entry/exit stubs at synthetic Fxxxxxxx labels.
+                # Follow only register transfers and unconditional forwarding to a guest
+                # label; these stubs do not change the jump table's guest destination.
+                stubs = {}
+                end = next((i for i in range(n + 1, len(lines)) if lines[i] == '}'), len(lines))
+                for i in range(n + 1, end):
+                    stub = re.fullmatch(r'loc_(F[0-9A-F]{7}):', lines[i])
+                    if not stub:
+                        continue
+                    for following in lines[i + 1:end]:
+                        text = following.strip()
+                        if not text or re.fullmatch(r'REX_LOOP_(?:IN|OUT)\(.*\);', text):
+                            continue
+                        target = re.fullmatch(r'goto loc_([0-9A-F]+);', text) or \
+                            re.fullmatch(r'loc_([0-9A-F]+):', text)
+                        if target:
+                            stubs[int(stub.group(1), 16)] = int(target.group(1), 16)
+                        break
                 n += 1
                 continue
             if func is None:
@@ -336,7 +354,7 @@ def generated_bctrs(gen):
                     n += 1
                     while n < len(lines) and lines[n].strip() == '':
                         n += 1
-                    sm = re.match(r'\tswitch \(ctx\.r(\d+)\.u32\) \{', lines[n])
+                    sm = re.match(r'\tswitch \((?:ctx\.r|ll_r)(\d+)\.u32\) \{', lines[n])
                     if sm:
                         reg, cases, cur = int(sm.group(1)), [], None
                         n += 1
@@ -354,6 +372,12 @@ def generated_bctrs(gen):
                                 elif 'jump to null value' in lines[n] and cases[cur] is None:
                                     cases[cur] = 0
                             n += 1
+                        for i, target in enumerate(cases):
+                            seen = set()
+                            while target in stubs and target not in seen:
+                                seen.add(target)
+                                target = stubs[target]
+                            cases[i] = target
                         out.setdefault(here, []).append((func, 'switch', reg, cases))
                     elif 'REX_CALL_INDIRECT_FUNC' in '\n'.join(lines[n:n + 3]):
                         out.setdefault(here, []).append((func, 'indirect', None, []))

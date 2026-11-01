@@ -70,7 +70,9 @@ if(CMAKE_HOST_WIN32)
     set(RENUT_DXC "${RENUT_DXC_BIN_DIR}/dxc.exe")
 else()
     # The Linux binary finds libdxcompiler next to it.
-    set(RENUT_DXC env "LD_LIBRARY_PATH=${RENUT_XENOS_RECOMP_DIR}/thirdparty/dxc-bin/lib/x64" "${RENUT_DXC_BIN_DIR}/dxc-linux")
+    # Keep this a single executable: deko3d_host_shader.py takes --dxc as one argument.
+    # tools/build_linux.sh exports the vendored DXC library directory.
+    set(RENUT_DXC "${RENUT_DXC_BIN_DIR}/dxc-linux")
 endif()
 
 # renut_host_shader(<target> <stem> <profile>) compiles gpu/shaders/host/<stem>.hlsl

@@ -1,3 +1,11 @@
+# Dark Souls II Switch — Linux build fork
+
+This fork adds a tested Linux build workflow and build-tool fixes to [hazevauks/MajulaRecomp](https://github.com/hazevauks/MajulaRecomp). It is based on upstream's **`ds2-2014-final`** revision for the original Xbox 360 disc, executable version **0.0.0.8**. The original port, renderer, SDK adaptations, and game-specific work are credited below and in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
+Start with the [Linux build instructions and validation results](LOCAL_BUILD.md), then the [Switch launch instructions](docs/local-install.md). The Linux ARM64 build and static checks passed; this fork's build has not been tested on Switch hardware. Supply your own game files; game assets, generated code, shaders, tool binaries, and NROs are excluded from this repository.
+
+The upstream README follows.
+
 ## MajulaRecomp — Dark Souls II on Nintendo Switch
 
 ![Banner](Banner.jpg)
